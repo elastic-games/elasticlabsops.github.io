@@ -32,6 +32,9 @@ original code. No ShapeFab assets or source were copied.
 - Keep the concept-art disclosure, private-demo status and actual contact email.
   The .site mailbox name is intentional and is separate from the public .com domain.
 
+Bump the landing stylesheet/script version tags in `index.html` when changing motion
+or styling, so browsers request a matching pair of assets.
+
 Before publishing, inspect desktop and mobile layouts, the project/detail links,
 contact links, the mobile menu, pause/resume and reduced motion. `node --check
 script.js` and `node --check energy.js` check the small JavaScript files.
