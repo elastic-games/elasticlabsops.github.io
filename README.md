@@ -18,8 +18,14 @@ original code. No ShapeFab assets or source were copied.
 
 - `landing.css` is loaded only by the homepage; `styles.css` continues to style
   the Giant & Ghosts detail page.
-- `energy.js` handles the pause control, small pointer displacement, reduced
-  motion and offscreen suspension. There is no continuous JavaScript render loop.
+- `energy.js` draws changing ribbon geometry and traveling highlights on a transparent
+  canvas. Drawing is capped at 60 fps on desktop and 30 fps on smaller canvases,
+  with a 2.2-million-pixel budget. Pausing, leaving the hero or hiding the tab stops
+  the animation clock. The original SVG remains the still no-script fallback.
+- The local preview includes Silk, Current and Resonance treatments plus a pace
+  slider. Resonance at 1.0× is the selected default. Choices are reflected in
+  `?motion=resonance&pace=1.0` for comparison and
+  survive reloads. These controls are never created on the public hostname.
 - Reduced-motion visitors get a still composition, with an explicit resume option.
 - Navigation and content remain usable without JavaScript. The shared menu script
   supports keyboard dismissal and keeps closed mobile links out of the focus order.

@@ -46,12 +46,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .button span { font-size: 17px; font-weight: 400; }
 .button--glass { color: #e2d7ef; border-color: #bd99e440; background: linear-gradient(150deg, #9a78be2b, #66507819); box-shadow: inset 0 1px 1px #d4b5f126, 0 3px 18px #00000016; backdrop-filter: blur(12px); }
 .button--glass:hover { border-color: #bd99e47a; box-shadow: 0 6px 22px #9978c41a; }
-.energy-field { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; transform: translate(var(--energy-x, 0px), var(--energy-y, 0px)) scale(1.035); }
-.energy-ribbon { transform-origin: 50% 64%; will-change: transform; }
-.energy-ribbon--amber { animation: drift-amber 19s ease-in-out infinite alternate; }
-.energy-ribbon--violet { animation: drift-violet 23s ease-in-out infinite alternate; }
-@keyframes drift-amber { from { transform: translateY(-15px) rotate(-2deg) scaleY(.94); opacity: .74; } to { transform: translateY(20px) rotate(2deg) scaleY(1.08); opacity: 1; } }
-@keyframes drift-violet { from { transform: translateY(14px) rotate(2deg) scaleY(1.05); opacity: .9; } to { transform: translateY(-24px) rotate(-2deg) scaleY(.94); opacity: .68; } }
+/* The SVG remains the still fallback. Canvas draws evolving wave geometry. */
+.energy-field, .energy-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; }
+.energy-ribbon { transform: none; }
+.hero.canvas-ready .energy-field { visibility: hidden; }
 .hero__foot { position: absolute; bottom: 29px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
 .hero__scroll { display: inline-flex; align-items: center; gap: 12px; color: #a49ba7; text-decoration: none; font-size: 10px; letter-spacing: .045em; }
 .scroll-track { display: block; width: 14px; height: 23px; border: 1px solid #b6a7c04d; border-radius: 8px; }
@@ -59,8 +57,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .motion-toggle { white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 5px 0 5px 10px; border: 0; border-radius: 4px; background: none; color: #b6aabf; cursor: pointer; font: inherit; font-size: 10px; }
 .motion-toggle[hidden] { display: none; }
 .motion-toggle:hover { color: #eee3ef; }
-.hero:not(.motion-ready) .energy-ribbon { animation: none; }
-.hero.is-paused .energy-ribbon, .hero.is-offscreen .energy-ribbon { animation-play-state: paused; will-change: auto; }
+
 .section { padding: 110px 0; }
 .section h2 { margin: 0 0 22px; font-size: clamp(32px, 3.3vw, 48px); font-weight: 500; letter-spacing: -.05em; line-height: 1.14; }
 .section h2 span { color: #afa1ba; }
@@ -132,7 +129,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .hero .lead { font-size: 13px; margin-top: 24px; line-height: 1.9; }
   .hero__actions { align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 29px; }
   .hero__actions .button { padding: 13px 15px; gap: 16px; font-size: 12px; min-height: 46px; }
-  .energy-field { width: 160%; left: -30%; }
+  .energy-field, .energy-canvas { width: 160%; left: -30%; }
   .hero__foot { bottom: 24px; }
   .hero__scroll { font-size: 10px; gap: 8px; }
   .motion-toggle { font-size: 10px; }
@@ -177,8 +174,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .hero:not(.motion-enabled) .energy-ribbon { animation: none !important; will-change: auto; }
-  .energy-field { transform: none; }
   .button, .nav__menu { transition: none; }
 }
 html:not(.has-js) .motion-toggle { display: none; }
@@ -189,3 +184,20 @@ html:not(.has-js) .motion-toggle { display: none; }
   html:not(.has-js) .nav { width: 100%; margin-top: 22px; }
   html:not(.has-js) .nav__menu { position: static; flex-direction: row; flex-wrap: wrap; min-width: 0; opacity: 1; pointer-events: auto; transform: none; padding: 0; background: none; border: 0; box-shadow: none; }
 }
+
+/* Local preview only; energy.js never creates these controls on the public host. */
+.motion-lab { position: fixed; z-index: 1001; right: 22px; bottom: 22px; width: 315px; padding: 18px; border: 1px solid #c6a4df44; border-radius: 14px; background: #24202bef; box-shadow: 0 12px 45px #0006; backdrop-filter: blur(18px); }
+.motion-lab__heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 15px; }
+.motion-lab__heading strong { font-size: 12px; font-weight: 500; color: #f0e5d9; }
+.motion-lab__heading span { font-size: 9px; color: #a99bb6; }
+.motion-lab__options { display: flex; gap: 6px; }
+.motion-lab__options button { flex: 1; min-height: 36px; padding: 8px 10px; border: 1px solid #b197c22e; border-radius: 7px; background: #ffffff04; color: #c8becf; font: inherit; font-size: 11px; cursor: pointer; }
+.motion-lab__options button[aria-pressed="true"] { color: #f3dcc3; background: #c8a58022; border-color: #d6ac8066; }
+.motion-lab__pace { display: flex; align-items: center; gap: 13px; margin-top: 17px; font-size: 10px; color: #bcafc6; }
+.motion-lab__pace input { width: 100%; accent-color: #d7b896; cursor: pointer; }
+.motion-lab__pace output { min-width: 28px; color: #ead4bc; }
+.motion-lab__description { margin: 13px 0 0; font-size: 10px; line-height: 1.6; color: #a99cb5; }
+@media (max-width: 600px) { .motion-lab { right: 12px; bottom: 12px; width: min(315px, calc(100% - 24px)); padding: 14px; } }
+
+.motion-lab__pause { border: 0; border-radius: 5px; background: transparent; color: #d5c3e0; font: inherit; font-size: 10px; min-height: 30px; cursor: pointer; padding: 0 5px; }
+.motion-lab__pause:hover { color: #fff1df; background: #ffffff08; }
