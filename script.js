@@ -1,26 +1,27 @@
+document.documentElement.classList.add('has-js');
 const navToggle = document.querySelector('.nav__toggle');
 const navMenu = document.querySelector('.nav__menu');
 const yearElement = document.getElementById('year');
 
-if (yearElement) {
-  yearElement.textContent = new Date().getFullYear();
-}
+if (yearElement) yearElement.textContent = new Date().getFullYear();
 
 if (navToggle && navMenu) {
-  const toggleMenu = () => {
-    const expanded = navToggle.getAttribute('aria-expanded') === 'true';
-    navToggle.setAttribute('aria-expanded', String(!expanded));
-    navMenu.setAttribute('aria-hidden', String(expanded));
+  const mobile = window.matchMedia('(max-width: 768px)');
+  const setMenu = (expanded, restoreFocus = false) => {
+    navToggle.setAttribute('aria-expanded', String(expanded));
+    const hidden = mobile.matches && !expanded;
+    navMenu.setAttribute('aria-hidden', String(hidden));
+    navMenu.inert = hidden;
+    if (restoreFocus) navToggle.focus();
   };
-
-  navToggle.addEventListener('click', toggleMenu);
-
-  navMenu.querySelectorAll('a').forEach((link) => {
-    link.addEventListener('click', () => {
-      navToggle.setAttribute('aria-expanded', 'false');
-      navMenu.setAttribute('aria-hidden', 'true');
-    });
+  navToggle.addEventListener('click', () => setMenu(navToggle.getAttribute('aria-expanded') !== 'true'));
+  navMenu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setMenu(false)));
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && navToggle.getAttribute('aria-expanded') === 'true') setMenu(false, true);
   });
-
-  navMenu.setAttribute('aria-hidden', 'true');
+  document.addEventListener('click', event => {
+    if (mobile.matches && !event.target.closest('.nav')) setMenu(false);
+  });
+  mobile.addEventListener('change', () => setMenu(false));
+  setMenu(false);
 }

@@ -9,12 +9,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <meta name="theme-color" content="#181619" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Elastic Labs | Independent Game Studio" />
+  <meta property="og:description" content="We build games where cooperation changes the story. An independent game studio in Miami, Florida." />
+  <meta property="og:url" content="https://elasticlabs.com/" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="landing.css" />
 </head>
-<body>
+<body class="landing-page">
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <header class="site-header">
     <div class="container">
-      <a class="logo" href="#top">Elastic Labs</a>
+      <a class="logo" href="#top" aria-label="Elastic Labs home">
+        <svg class="brand-wave" width="32" height="28" viewBox="0 0 32 28" fill="none" aria-hidden="true"><path d="M2 8C9-2 23 18 30 8M2 14C9 4 23 24 30 14M2 20C9 10 23 30 30 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+        Elastic Labs
+      </a>
       <nav class="nav" aria-label="Main navigation">
         <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-menu">
           <span class="sr-only">Toggle navigation</span>
@@ -24,58 +34,158 @@
         </button>
         <ul class="nav__menu" id="nav-menu">
           <li><a href="#studio">Studio</a></li>
-          <li><a href="/games/giant-and-ghosts/">Project</a></li>
-          <li><a href="#capabilities">Capabilities</a></li>
-          <li><a href="#contact">Contact</a></li>
+          <li><a href="#project">Our game</a></li>
+          <li><a href="#capabilities">Our approach</a></li>
+          <li><a class="nav__contact" href="#contact">Let’s talk <span aria-hidden="true">↗</span></a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main id="top">
-    <section class="hero">
+  <main id="main-content" tabindex="-1">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero__ambient" aria-hidden="true"></div>
+      <svg class="energy-field" viewBox="0 0 1600 960" fill="none" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="energy-amber" x1="0" y1="400" x2="1600" y2="650" gradientUnits="userSpaceOnUse"><stop stop-color="#cf8c51" stop-opacity="0"/><stop offset=".23" stop-color="#d49b64"/><stop offset=".51" stop-color="#f3c996"/><stop offset=".76" stop-color="#ad7450"/><stop offset="1" stop-color="#d4975e" stop-opacity="0"/></linearGradient>
+          <linearGradient id="energy-violet" x1="0" y1="800" x2="1600" y2="400" gradientUnits="userSpaceOnUse"><stop stop-color="#7d80c9" stop-opacity="0"/><stop offset=".22" stop-color="#99a9ed"/><stop offset=".48" stop-color="#ba9aeb"/><stop offset=".72" stop-color="#8a6bc3"/><stop offset="1" stop-color="#8d7cce" stop-opacity="0"/></linearGradient>
+          <filter id="energy-glow" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="11"/></filter>
+        </defs>
+        <g class="energy-ribbon energy-ribbon--amber" stroke-width=".8">
+          <path d="M -180 330.00 C 160 670.00, 450 265.00, 820 555.00 S 1270 815.00, 1780 365.00" stroke="url(#energy-amber)" opacity="0.120" />
+          <path d="M -180 331.55 C 160 668.30, 450 267.35, 820 555.32 S 1270 812.60, 1780 365.70" stroke="url(#energy-amber)" opacity="0.123" />
+          <path d="M -180 333.10 C 160 666.60, 450 269.70, 820 555.64 S 1270 810.20, 1780 366.40" stroke="url(#energy-amber)" opacity="0.128" />
+          <path d="M -180 334.65 C 160 664.90, 450 272.05, 820 555.96 S 1270 807.80, 1780 367.10" stroke="url(#energy-amber)" opacity="0.134" />
+          <path d="M -180 336.20 C 160 663.20, 450 274.40, 820 556.28 S 1270 805.40, 1780 367.80" stroke="url(#energy-amber)" opacity="0.143" />
+          <path d="M -180 337.75 C 160 661.50, 450 276.75, 820 556.60 S 1270 803.00, 1780 368.50" stroke="url(#energy-amber)" opacity="0.152" />
+          <path d="M -180 339.30 C 160 659.80, 450 279.10, 820 556.92 S 1270 800.60, 1780 369.20" stroke="url(#energy-amber)" opacity="0.164" />
+          <path d="M -180 340.85 C 160 658.10, 450 281.45, 820 557.24 S 1270 798.20, 1780 369.90" stroke="url(#energy-amber)" opacity="0.177" />
+          <path d="M -180 342.40 C 160 656.40, 450 283.80, 820 557.56 S 1270 795.80, 1780 370.60" stroke="url(#energy-amber)" opacity="0.191" />
+          <path d="M -180 343.95 C 160 654.70, 450 286.15, 820 557.88 S 1270 793.40, 1780 371.30" stroke="url(#energy-amber)" opacity="0.207" />
+          <path d="M -180 345.50 C 160 653.00, 450 288.50, 820 558.20 S 1270 791.00, 1780 372.00" stroke="url(#energy-amber)" opacity="0.224" />
+          <path d="M -180 347.05 C 160 651.30, 450 290.85, 820 558.52 S 1270 788.60, 1780 372.70" stroke="url(#energy-amber)" opacity="0.242" />
+          <path d="M -180 348.60 C 160 649.60, 450 293.20, 820 558.84 S 1270 786.20, 1780 373.40" stroke="url(#energy-amber)" opacity="0.262" />
+          <path d="M -180 350.15 C 160 647.90, 450 295.55, 820 559.16 S 1270 783.80, 1780 374.10" stroke="url(#energy-amber)" opacity="0.283" />
+          <path d="M -180 351.70 C 160 646.20, 450 297.90, 820 559.48 S 1270 781.40, 1780 374.80" stroke="url(#energy-amber)" opacity="0.306" />
+          <path d="M -180 353.25 C 160 644.50, 450 300.25, 820 559.80 S 1270 779.00, 1780 375.50" stroke="url(#energy-amber)" opacity="0.329" />
+          <path d="M -180 354.80 C 160 642.80, 450 302.60, 820 560.12 S 1270 776.60, 1780 376.20" stroke="url(#energy-amber)" opacity="0.354" />
+          <path d="M -180 356.35 C 160 641.10, 450 304.95, 820 560.44 S 1270 774.20, 1780 376.90" stroke="url(#energy-amber)" opacity="0.381" />
+          <path d="M -180 357.90 C 160 639.40, 450 307.30, 820 560.76 S 1270 771.80, 1780 377.60" stroke="url(#energy-amber)" opacity="0.408" />
+          <path d="M -180 359.45 C 160 637.70, 450 309.65, 820 561.08 S 1270 769.40, 1780 378.30" stroke="url(#energy-amber)" opacity="0.437" />
+          <path d="M -180 361.00 C 160 636.00, 450 312.00, 820 561.40 S 1270 767.00, 1780 379.00" stroke="url(#energy-amber)" opacity="0.466" />
+          <path d="M -180 362.55 C 160 634.30, 450 314.35, 820 561.72 S 1270 764.60, 1780 379.70" stroke="url(#energy-amber)" opacity="0.497" />
+          <path d="M -180 364.10 C 160 632.60, 450 316.70, 820 562.04 S 1270 762.20, 1780 380.40" stroke="url(#energy-amber)" opacity="0.530" />
+          <path d="M -180 365.65 C 160 630.90, 450 319.05, 820 562.36 S 1270 759.80, 1780 381.10" stroke="url(#energy-amber)" opacity="0.563" />
+          <path d="M -180 367.20 C 160 629.20, 450 321.40, 820 562.68 S 1270 757.40, 1780 381.80" stroke="url(#energy-amber)" opacity="0.563" />
+          <path d="M -180 368.75 C 160 627.50, 450 323.75, 820 563.00 S 1270 755.00, 1780 382.50" stroke="url(#energy-amber)" opacity="0.530" />
+          <path d="M -180 370.30 C 160 625.80, 450 326.10, 820 563.32 S 1270 752.60, 1780 383.20" stroke="url(#energy-amber)" opacity="0.497" />
+          <path d="M -180 371.85 C 160 624.10, 450 328.45, 820 563.64 S 1270 750.20, 1780 383.90" stroke="url(#energy-amber)" opacity="0.466" />
+          <path d="M -180 373.40 C 160 622.40, 450 330.80, 820 563.96 S 1270 747.80, 1780 384.60" stroke="url(#energy-amber)" opacity="0.437" />
+          <path d="M -180 374.95 C 160 620.70, 450 333.15, 820 564.28 S 1270 745.40, 1780 385.30" stroke="url(#energy-amber)" opacity="0.408" />
+          <path d="M -180 376.50 C 160 619.00, 450 335.50, 820 564.60 S 1270 743.00, 1780 386.00" stroke="url(#energy-amber)" opacity="0.381" />
+          <path d="M -180 378.05 C 160 617.30, 450 337.85, 820 564.92 S 1270 740.60, 1780 386.70" stroke="url(#energy-amber)" opacity="0.354" />
+          <path d="M -180 379.60 C 160 615.60, 450 340.20, 820 565.24 S 1270 738.20, 1780 387.40" stroke="url(#energy-amber)" opacity="0.329" />
+          <path d="M -180 381.15 C 160 613.90, 450 342.55, 820 565.56 S 1270 735.80, 1780 388.10" stroke="url(#energy-amber)" opacity="0.306" />
+          <path d="M -180 382.70 C 160 612.20, 450 344.90, 820 565.88 S 1270 733.40, 1780 388.80" stroke="url(#energy-amber)" opacity="0.283" />
+          <path d="M -180 384.25 C 160 610.50, 450 347.25, 820 566.20 S 1270 731.00, 1780 389.50" stroke="url(#energy-amber)" opacity="0.262" />
+          <path d="M -180 385.80 C 160 608.80, 450 349.60, 820 566.52 S 1270 728.60, 1780 390.20" stroke="url(#energy-amber)" opacity="0.242" />
+          <path d="M -180 387.35 C 160 607.10, 450 351.95, 820 566.84 S 1270 726.20, 1780 390.90" stroke="url(#energy-amber)" opacity="0.224" />
+          <path d="M -180 388.90 C 160 605.40, 450 354.30, 820 567.16 S 1270 723.80, 1780 391.60" stroke="url(#energy-amber)" opacity="0.207" />
+          <path d="M -180 390.45 C 160 603.70, 450 356.65, 820 567.48 S 1270 721.40, 1780 392.30" stroke="url(#energy-amber)" opacity="0.191" />
+          <path d="M -180 392.00 C 160 602.00, 450 359.00, 820 567.80 S 1270 719.00, 1780 393.00" stroke="url(#energy-amber)" opacity="0.177" />
+          <path d="M -180 393.55 C 160 600.30, 450 361.35, 820 568.12 S 1270 716.60, 1780 393.70" stroke="url(#energy-amber)" opacity="0.164" />
+          <path d="M -180 395.10 C 160 598.60, 450 363.70, 820 568.44 S 1270 714.20, 1780 394.40" stroke="url(#energy-amber)" opacity="0.152" />
+          <path d="M -180 396.65 C 160 596.90, 450 366.05, 820 568.76 S 1270 711.80, 1780 395.10" stroke="url(#energy-amber)" opacity="0.143" />
+          <path d="M -180 398.20 C 160 595.20, 450 368.40, 820 569.08 S 1270 709.40, 1780 395.80" stroke="url(#energy-amber)" opacity="0.134" />
+          <path d="M -180 399.75 C 160 593.50, 450 370.75, 820 569.40 S 1270 707.00, 1780 396.50" stroke="url(#energy-amber)" opacity="0.128" />
+          <path d="M -180 401.30 C 160 591.80, 450 373.10, 820 569.72 S 1270 704.60, 1780 397.20" stroke="url(#energy-amber)" opacity="0.123" />
+          <path d="M -180 402.85 C 160 590.10, 450 375.45, 820 570.04 S 1270 702.20, 1780 397.90" stroke="url(#energy-amber)" opacity="0.120" />
+          <path class="energy-halo" d="M-180 366C160 629 450 321 820 563S1270 759 1780 382" stroke="url(#energy-amber)" stroke-width="19" opacity=".2" filter="url(#energy-glow)" />
+        </g>
+        <g class="energy-ribbon energy-ribbon--violet" stroke-width=".75">
+          <path d="M -180 800.00 C 250 475.00, 455 825.00, 825 620.00 S 1290 355.00, 1780 820.00" stroke="url(#energy-violet)" opacity="0.110" />
+          <path d="M -180 797.50 C 250 475.80, 455 822.70, 825 619.15 S 1290 357.00, 1780 818.60" stroke="url(#energy-violet)" opacity="0.111" />
+          <path d="M -180 795.00 C 250 476.60, 455 820.40, 825 618.30 S 1290 359.00, 1780 817.20" stroke="url(#energy-violet)" opacity="0.114" />
+          <path d="M -180 792.50 C 250 477.40, 455 818.10, 825 617.45 S 1290 361.00, 1780 815.80" stroke="url(#energy-violet)" opacity="0.118" />
+          <path d="M -180 790.00 C 250 478.20, 455 815.80, 825 616.60 S 1290 363.00, 1780 814.40" stroke="url(#energy-violet)" opacity="0.123" />
+          <path d="M -180 787.50 C 250 479.00, 455 813.50, 825 615.75 S 1290 365.00, 1780 813.00" stroke="url(#energy-violet)" opacity="0.129" />
+          <path d="M -180 785.00 C 250 479.80, 455 811.20, 825 614.90 S 1290 367.00, 1780 811.60" stroke="url(#energy-violet)" opacity="0.137" />
+          <path d="M -180 782.50 C 250 480.60, 455 808.90, 825 614.05 S 1290 369.00, 1780 810.20" stroke="url(#energy-violet)" opacity="0.146" />
+          <path d="M -180 780.00 C 250 481.40, 455 806.60, 825 613.20 S 1290 371.00, 1780 808.80" stroke="url(#energy-violet)" opacity="0.156" />
+          <path d="M -180 777.50 C 250 482.20, 455 804.30, 825 612.35 S 1290 373.00, 1780 807.40" stroke="url(#energy-violet)" opacity="0.168" />
+          <path d="M -180 775.00 C 250 483.00, 455 802.00, 825 611.50 S 1290 375.00, 1780 806.00" stroke="url(#energy-violet)" opacity="0.180" />
+          <path d="M -180 772.50 C 250 483.80, 455 799.70, 825 610.65 S 1290 377.00, 1780 804.60" stroke="url(#energy-violet)" opacity="0.194" />
+          <path d="M -180 770.00 C 250 484.60, 455 797.40, 825 609.80 S 1290 379.00, 1780 803.20" stroke="url(#energy-violet)" opacity="0.210" />
+          <path d="M -180 767.50 C 250 485.40, 455 795.10, 825 608.95 S 1290 381.00, 1780 801.80" stroke="url(#energy-violet)" opacity="0.226" />
+          <path d="M -180 765.00 C 250 486.20, 455 792.80, 825 608.10 S 1290 383.00, 1780 800.40" stroke="url(#energy-violet)" opacity="0.244" />
+          <path d="M -180 762.50 C 250 487.00, 455 790.50, 825 607.25 S 1290 385.00, 1780 799.00" stroke="url(#energy-violet)" opacity="0.263" />
+          <path d="M -180 760.00 C 250 487.80, 455 788.20, 825 606.40 S 1290 387.00, 1780 797.60" stroke="url(#energy-violet)" opacity="0.284" />
+          <path d="M -180 757.50 C 250 488.60, 455 785.90, 825 605.55 S 1290 389.00, 1780 796.20" stroke="url(#energy-violet)" opacity="0.305" />
+          <path d="M -180 755.00 C 250 489.40, 455 783.60, 825 604.70 S 1290 391.00, 1780 794.80" stroke="url(#energy-violet)" opacity="0.328" />
+          <path d="M -180 752.50 C 250 490.20, 455 781.30, 825 603.85 S 1290 393.00, 1780 793.40" stroke="url(#energy-violet)" opacity="0.353" />
+          <path d="M -180 750.00 C 250 491.00, 455 779.00, 825 603.00 S 1290 395.00, 1780 792.00" stroke="url(#energy-violet)" opacity="0.378" />
+          <path d="M -180 747.50 C 250 491.80, 455 776.70, 825 602.15 S 1290 397.00, 1780 790.60" stroke="url(#energy-violet)" opacity="0.405" />
+          <path d="M -180 745.00 C 250 492.60, 455 774.40, 825 601.30 S 1290 399.00, 1780 789.20" stroke="url(#energy-violet)" opacity="0.433" />
+          <path d="M -180 742.50 C 250 493.40, 455 772.10, 825 600.45 S 1290 401.00, 1780 787.80" stroke="url(#energy-violet)" opacity="0.462" />
+          <path d="M -180 740.00 C 250 494.20, 455 769.80, 825 599.60 S 1290 403.00, 1780 786.40" stroke="url(#energy-violet)" opacity="0.493" />
+          <path d="M -180 737.50 C 250 495.00, 455 767.50, 825 598.75 S 1290 405.00, 1780 785.00" stroke="url(#energy-violet)" opacity="0.525" />
+          <path d="M -180 735.00 C 250 495.80, 455 765.20, 825 597.90 S 1290 407.00, 1780 783.60" stroke="url(#energy-violet)" opacity="0.558" />
+          <path d="M -180 732.50 C 250 496.60, 455 762.90, 825 597.05 S 1290 409.00, 1780 782.20" stroke="url(#energy-violet)" opacity="0.592" />
+          <path d="M -180 730.00 C 250 497.40, 455 760.60, 825 596.20 S 1290 411.00, 1780 780.80" stroke="url(#energy-violet)" opacity="0.592" />
+          <path d="M -180 727.50 C 250 498.20, 455 758.30, 825 595.35 S 1290 413.00, 1780 779.40" stroke="url(#energy-violet)" opacity="0.558" />
+          <path d="M -180 725.00 C 250 499.00, 455 756.00, 825 594.50 S 1290 415.00, 1780 778.00" stroke="url(#energy-violet)" opacity="0.525" />
+          <path d="M -180 722.50 C 250 499.80, 455 753.70, 825 593.65 S 1290 417.00, 1780 776.60" stroke="url(#energy-violet)" opacity="0.493" />
+          <path d="M -180 720.00 C 250 500.60, 455 751.40, 825 592.80 S 1290 419.00, 1780 775.20" stroke="url(#energy-violet)" opacity="0.462" />
+          <path d="M -180 717.50 C 250 501.40, 455 749.10, 825 591.95 S 1290 421.00, 1780 773.80" stroke="url(#energy-violet)" opacity="0.433" />
+          <path d="M -180 715.00 C 250 502.20, 455 746.80, 825 591.10 S 1290 423.00, 1780 772.40" stroke="url(#energy-violet)" opacity="0.405" />
+          <path d="M -180 712.50 C 250 503.00, 455 744.50, 825 590.25 S 1290 425.00, 1780 771.00" stroke="url(#energy-violet)" opacity="0.378" />
+          <path d="M -180 710.00 C 250 503.80, 455 742.20, 825 589.40 S 1290 427.00, 1780 769.60" stroke="url(#energy-violet)" opacity="0.353" />
+          <path d="M -180 707.50 C 250 504.60, 455 739.90, 825 588.55 S 1290 429.00, 1780 768.20" stroke="url(#energy-violet)" opacity="0.328" />
+          <path d="M -180 705.00 C 250 505.40, 455 737.60, 825 587.70 S 1290 431.00, 1780 766.80" stroke="url(#energy-violet)" opacity="0.305" />
+          <path d="M -180 702.50 C 250 506.20, 455 735.30, 825 586.85 S 1290 433.00, 1780 765.40" stroke="url(#energy-violet)" opacity="0.284" />
+          <path d="M -180 700.00 C 250 507.00, 455 733.00, 825 586.00 S 1290 435.00, 1780 764.00" stroke="url(#energy-violet)" opacity="0.263" />
+          <path d="M -180 697.50 C 250 507.80, 455 730.70, 825 585.15 S 1290 437.00, 1780 762.60" stroke="url(#energy-violet)" opacity="0.244" />
+          <path d="M -180 695.00 C 250 508.60, 455 728.40, 825 584.30 S 1290 439.00, 1780 761.20" stroke="url(#energy-violet)" opacity="0.226" />
+          <path d="M -180 692.50 C 250 509.40, 455 726.10, 825 583.45 S 1290 441.00, 1780 759.80" stroke="url(#energy-violet)" opacity="0.210" />
+          <path d="M -180 690.00 C 250 510.20, 455 723.80, 825 582.60 S 1290 443.00, 1780 758.40" stroke="url(#energy-violet)" opacity="0.194" />
+          <path d="M -180 687.50 C 250 511.00, 455 721.50, 825 581.75 S 1290 445.00, 1780 757.00" stroke="url(#energy-violet)" opacity="0.180" />
+          <path d="M -180 685.00 C 250 511.80, 455 719.20, 825 580.90 S 1290 447.00, 1780 755.60" stroke="url(#energy-violet)" opacity="0.168" />
+          <path d="M -180 682.50 C 250 512.60, 455 716.90, 825 580.05 S 1290 449.00, 1780 754.20" stroke="url(#energy-violet)" opacity="0.156" />
+          <path d="M -180 680.00 C 250 513.40, 455 714.60, 825 579.20 S 1290 451.00, 1780 752.80" stroke="url(#energy-violet)" opacity="0.146" />
+          <path d="M -180 677.50 C 250 514.20, 455 712.30, 825 578.35 S 1290 453.00, 1780 751.40" stroke="url(#energy-violet)" opacity="0.137" />
+          <path d="M -180 675.00 C 250 515.00, 455 710.00, 825 577.50 S 1290 455.00, 1780 750.00" stroke="url(#energy-violet)" opacity="0.129" />
+          <path d="M -180 672.50 C 250 515.80, 455 707.70, 825 576.65 S 1290 457.00, 1780 748.60" stroke="url(#energy-violet)" opacity="0.123" />
+          <path d="M -180 670.00 C 250 516.60, 455 705.40, 825 575.80 S 1290 459.00, 1780 747.20" stroke="url(#energy-violet)" opacity="0.118" />
+          <path d="M -180 667.50 C 250 517.40, 455 703.10, 825 574.95 S 1290 461.00, 1780 745.80" stroke="url(#energy-violet)" opacity="0.114" />
+          <path d="M -180 665.00 C 250 518.20, 455 700.80, 825 574.10 S 1290 463.00, 1780 744.40" stroke="url(#energy-violet)" opacity="0.111" />
+          <path d="M -180 662.50 C 250 519.00, 455 698.50, 825 573.25 S 1290 465.00, 1780 743.00" stroke="url(#energy-violet)" opacity="0.110" />
+          <path class="energy-halo" d="M-180 730C250 497 455 761 825 597S1290 411 1780 781" stroke="url(#energy-violet)" stroke-width="24" opacity=".23" filter="url(#energy-glow)" />
+        </g>
+      </svg>
       <div class="container hero__content">
-        <div class="hero__text">
-          <p class="eyebrow">Miami, Florida · Independent game studio</p>
-          <h1>We build games where cooperation changes the story.</h1>
-          <p class="lead">
-            Elastic Labs LLC is developing <strong>Giant &amp; Ghosts</strong>, a cooperative
-            dark-fantasy roguelite about a team of ghosts responsible for one vulnerable giant.
-            A working development demo is available privately to invited testers through Steam Playtest.
-          </p>
-          <div class="hero__actions">
-            <a class="button" href="/games/giant-and-ghosts/">Meet the project</a>
-            <a class="link" href="#contact">Contact the studio</a>
-          </div>
-        </div>
-        <div class="hero__card" role="presentation">
-          <div class="hero__badge">Playable private Steam demo</div>
-          <p class="hero__quote">
-            One giant. Too many directions. The team succeeds only when its ghosts communicate,
-            coordinate, and keep their shared hero moving.
-          </p>
+        <p class="eyebrow hero__eyebrow"><span class="status-light" aria-hidden="true"></span> Independent game studio · Miami, FL</p>
+        <h1 id="hero-title">Where cooperation<br />changes <span>the story.</span></h1>
+        <p class="lead">Expressive worlds. Unexpected possibilities.<br class="desktop-break" /> Games that come alive when we play together.</p>
+        <div class="hero__actions">
+          <a class="button" href="#project">Discover our game <span aria-hidden="true">↗</span></a>
+          <a class="button button--glass" href="#studio">Meet Elastic Labs <span aria-hidden="true">↓</span></a>
         </div>
       </div>
-    </section>
-
-    <section class="section" id="studio">
-      <div class="container">
-        <h2>About Elastic Labs</h2>
-        <p class="section__lead">
-          Elastic Labs LLC is an independent Florida studio based in Miami. We focus on
-          readable systems, expressive worlds, and cooperative play that creates memorable stories.
-        </p>
+      <div class="container hero__foot">
+        <a class="hero__scroll" href="#project"><span class="scroll-track" aria-hidden="true"><span></span></span> A shared adventure starts here</a>
+        <button class="motion-toggle" type="button" aria-pressed="false" hidden><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M2 1h2v10H2zM8 1h2v10H8z"/></svg><span>Pause motion</span></button>
       </div>
     </section>
 
     <section class="section section--dark" id="project">
+      <div class="container section-kicker"><p class="eyebrow">A world we’re building</p><span class="section-index">01 / Selected project</span></div>
       <div class="container project">
         <figure class="project__media">
-          <img src="assets/giant-and-ghosts-concept.jpg" alt="Concept visualization of a stone giant and blue ghosts gathering around a lantern in a ruined arena" />
+          <img loading="lazy" width="1536" height="864" src="assets/giant-and-ghosts-concept.jpg" alt="Concept visualization of a stone giant and blue ghosts gathering around a lantern in a ruined arena" />
           <figcaption>Concept visualization · Representative of the private demo · Not gameplay capture</figcaption>
         </figure>
         <div class="project__copy">
-          <p class="eyebrow">Working title · Private Steam Playtest</p>
+          <p class="eyebrow"><span class="status-light" aria-hidden="true"></span> In development · Private Steam Playtest</p>
           <h2>Giant &amp; Ghosts</h2>
           <p class="project__tagline">One giant. Too many directions.</p>
           <p>
@@ -103,27 +213,37 @@
             <span>Private Steam playtesting, command readability, arena objectives, and cooperative interaction.</span>
           </div>
           <div class="project__actions">
-            <a class="button" href="/games/giant-and-ghosts/">View the full project</a>
+            <a class="button" href="/games/giant-and-ghosts/">Explore Giant &amp; Ghosts <span aria-hidden="true">↗</span></a>
           </div>
         </div>
       </div>
     </section>
 
+    <section class="section" id="studio">
+      <div class="container studio-intro">
+        <div><p class="eyebrow">The studio</p><h2>Independent in spirit.<br /><span>Connected by play.</span></h2></div>
+        <p class="section__lead">
+          Elastic Labs LLC is an independent Florida studio based in Miami. We focus on
+          readable systems, expressive worlds, and cooperative play that creates memorable stories.
+        </p>
+      </div>
+    </section>
+
     <section class="section" id="capabilities">
       <div class="container">
-        <h2>How we work</h2>
+        <p class="eyebrow">The Elastic approach</p><h2>A spark. A prototype.<br /><span>Something worth playing.</span></h2>
         <p class="section__lead">From a clear playable premise to a disciplined release plan.</p>
         <div class="grid">
           <article class="card">
-            <h3>Design &amp; prototyping</h3>
+            <span class="card__index" aria-hidden="true">01</span><h3>Design &amp; prototyping</h3>
             <p>We turn a strong player fantasy into testable mechanics, clear controls, and readable moment-to-moment play.</p>
           </article>
           <article class="card">
-            <h3>Cooperative experience</h3>
+            <span class="card__index" aria-hidden="true">02</span><h3>Cooperative experience</h3>
             <p>We design around communication, shared responsibility, and the stories that emerge when a team must coordinate.</p>
           </article>
           <article class="card">
-            <h3>Production planning</h3>
+            <span class="card__index" aria-hidden="true">03</span><h3>Production planning</h3>
             <p>We define milestones, platform needs, optimization work, quality assurance, and release-readiness early.</p>
           </article>
         </div>
@@ -133,11 +253,11 @@
     <section class="cta" id="contact">
       <div class="container cta__content">
         <div>
-          <h2>Talk with Elastic Labs</h2>
+          <p class="eyebrow">Let’s make a connection</p><h2>Good things start<br />with <span>a spark.</span></h2>
           <p>For development, publishing, and business inquiries, contact the studio directly.</p>
         </div>
         <div class="cta__actions">
-          <a class="button button--light" href="mailto:inbox@elasticlabs.site">inbox@elasticlabs.site</a>
+          <a class="button button--light" href="mailto:inbox@elasticlabs.site">inbox@elasticlabs.site <span aria-hidden="true">↗</span></a>
         </div>
       </div>
     </section>
@@ -152,6 +272,7 @@
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
+  <script src="energy.js" defer></script>
 </body>
 </html>
