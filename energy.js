@@ -1,54 +1,143 @@
-/* Continuous ribbon geometry, with a static SVG fallback and local motion studies. */
+/* WebGL2 ribbons adapted from the public ShapeFab reference captured 2026-11-02.
+   Shader flow, palette and pointer response retain the reference mathematics.
+   See README.md for provenance and the Elastic-specific lifecycle/quiet zone. */
 (() => {
   const hero = document.querySelector('.hero');
   const toggle = document.querySelector('.motion-toggle');
   const fallback = document.querySelector('.energy-field');
-  if (!hero || !toggle || !fallback) return;
+  const copy = document.querySelector('.hero__content');
+  if (!hero || !toggle || !fallback || !copy) return;
+
+  const vertexSource = `#version 300 es
+in vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }`;
+  const fragmentSource = `#version 300 es
+precision highp float;
+uniform vec2 res;    // canvas size, CSS px
+uniform float scale; // device px per CSS px
+uniform float t;     // seconds
+uniform vec4 copyBounds; // centered copy bounds, normalized CSS coordinates
+uniform vec3 mouse;  // the cursor, CSS px in the canvas (far away when there is none), and how much it is stirring, 0..1
+out vec4 o;
+
+const vec3 BG = vec3(0.051, 0.047, 0.043);
+// the brand's orange, the agent smoke's violet and its blue
+const vec3 ORANGE = vec3(1.0, 0.45, 0.12);
+const vec3 VIOLET = vec3(0.45, 0.22, 1.0);
+const vec3 BLUE = vec3(0.12, 0.5, 1.0);
+
+// XorDev's turbulence: each wave runs along a turned axis and pushes across it, finer and weaker each time
+// n waves: the near ribbons need the fine ones, the far soft ones only the broad
+vec2 turbulence(vec2 p, float t, float n) {
+  float freq = 1.6;
+  mat2 rot = mat2(0.6, -0.8, 0.8, 0.6);
+  for (float i = 0.0; i < n; i++) {
+    float phase = freq * (p * rot).y + t + i;
+    p += 0.5 * rot[0] * sin(phase) / freq;
+    rot *= mat2(0.6, -0.8, 0.8, 0.6);
+    freq *= 1.45;
+  }
+  return p;
+}
+
+// a ribbon's glow at distance d: 1/d, held finite at the core
+float glow(float d, float core) { return core / (abs(d) + core); }
+
+// a ribbon as a bundle of five fine strands, like silk: they gather and fan out along its length, so it catches
+// the light in threads rather than as one tube. d: the distance from its middle; u: along it; seed: its own phase
+float strands(float d, float u, float seed) {
+  float spread = 0.006 + 0.014 * (0.5 + 0.5 * sin(u * 1.7 + t * 0.11 + seed));
+  float s = 0.0;
+  for (float k = -2.0; k <= 2.0; k++) {
+    float off = k * spread * (1.0 + 0.35 * sin(u * 3.1 + k * 1.9 + seed));
+    s += glow(d - off, 0.0022) * (1.0 - 0.18 * abs(k));
+  }
+  return s * 0.42;
+}
+
+// interleaved gradient noise: a dither under a 255th, so the dark gradients never band
+float ign(vec2 f) { return fract(52.9829189 * fract(dot(f, vec2(0.06711056, 0.00583715)))); }
+
+void main() {
+  vec2 px = vec2(gl_FragCoord.x, res.y * scale - gl_FragCoord.y) / scale;
+  // the hero in units of its height, from its left middle
+  vec2 p0 = (px - vec2(0.0, res.y * 0.5)) / res.y;
+  vec2 m = (mouse.xy - vec2(0.0, res.y * 0.5)) / res.y;
+  // the cursor stirs the light: a soft eddy that follows it, turning harder while it moves, and settling when it stops
+  vec2 dm = p0 - m;
+  float near = exp(-dot(dm, dm) / 0.012);
+  float turn = (0.5 + 2.2 * mouse.z) * near;
+  vec2 p = m + mat2(cos(turn), sin(turn), -sin(turn), cos(turn)) * dm;
+  vec2 q = turbulence(p * vec2(1.0, 1.3), t * 0.12, 7.0);
+  // three ribbons crossing left to right at different heights, each swaying on its own
+  float a = q.y + 0.18 + 0.10 * sin(q.x * 1.1 + t * 0.07);
+  float b = q.y - 0.02 + 0.12 * sin(q.x * 0.8 - t * 0.05 + 2.0);
+  float c = q.y - 0.24 + 0.09 * sin(q.x * 1.4 + t * 0.06 + 4.0);
+  // each ribbon brighter in long slow stretches along its length
+  float sa = 0.55 + 0.45 * sin(q.x * 0.9 - t * 0.21);
+  float sb = 0.55 + 0.45 * sin(q.x * 0.7 - t * 0.17 + 1.3);
+  float sc = 0.55 + 0.45 * sin(q.x * 1.1 - t * 0.19 + 2.6);
+  vec3 light = ORANGE * strands(a, q.x, 0.0) * sa + VIOLET * strands(b, q.x, 2.1) * sb * 1.35 + BLUE * strands(c, q.x, 4.2) * sc * 1.3;
+  // glints that run along each ribbon, as light catching silk
+  light *= 1.0 + 0.9 * (pow(0.5 + 0.5 * sin(q.x * 5.0 - t * 0.9), 12.0) + pow(0.5 + 0.5 * sin(q.x * 4.0 + t * 0.7 + 2.0), 12.0));
+  // and lights them where it passes
+  light *= 1.0 + (0.5 + 1.6 * mouse.z) * near;
+  // the haze they leave: the same falloff, much wider, each in its own colour
+  light += (ORANGE * glow(a, 0.10) * sa + VIOLET * glow(b, 0.14) * sb + BLUE * glow(c, 0.10) * sc) * 0.28;
+  // far behind: two wide soft ribbons, slower, drifting a little against the cursor, for depth
+  vec2 pf = p0 * 0.7 - (mouse.x > -1e3 ? m - vec2(0.9, 0.0) : vec2(0.0)) * 0.03;
+  vec2 r = turbulence(pf * vec2(1.0, 1.4) + vec2(3.7, 1.3), t * 0.05, 4.0);
+  float fa = r.y + 0.10 + 0.14 * sin(r.x * 0.6 + t * 0.03);
+  float fb = r.y - 0.22 + 0.12 * sin(r.x * 0.9 - t * 0.04 + 1.0);
+  light += (VIOLET * glow(fa, 0.035) + ORANGE * glow(fb, 0.03)) * 0.16;
+  // quiet behind the text
+  // Elastic's copy is centered rather than left aligned. Only the quiet zone changes.
+  vec2 fromCopy = max(copyBounds.xy - px / res, px / res - copyBounds.zw);
+  float dim = mix(0.35, 1.0, smoothstep(-0.02, 0.12, max(fromCopy.x, fromCopy.y)));
+  vec3 col = BG + tanh(light * 1.1 * dim);
+  // a slight vignette at the top corners, and the dither
+  col *= 1.0 - 0.18 * smoothstep(0.4, 1.2, length((px / res - vec2(0.5, 0.35)) * vec2(1.0, 1.4)));
+  col += (ign(gl_FragCoord.xy + fract(t * 7.0) * 64.0) - 0.5) / 255.0;
+  o = vec4(col, 1.0);
+}`;
 
   const canvas = document.createElement('canvas');
   canvas.className = 'energy-canvas';
   canvas.setAttribute('aria-hidden', 'true');
-  const ctx = canvas.getContext('2d', { alpha: true });
-  if (!ctx) return;
   fallback.after(canvas);
+  const gl = canvas.getContext('webgl2', {
+    antialias: false, alpha: false, powerPreference: 'low-power'
+  });
+  if (!gl) { canvas.remove(); return; }
 
-  const studies = {
-    silk: { name: 'Silk', speed: .42, amplitude: 66, detail: 3, width: 33, pulse: .12 },
-    current: { name: 'Current', speed: .78, amplitude: 93, detail: 7, width: 40, pulse: .24 },
-    resonance: { name: 'Resonance', speed: 1.05, amplitude: 81, detail: 17, width: 47, pulse: .20 }
-  };
-  const localPreview = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
-  const parameters = new URLSearchParams(location.search);
-  const requestedStudy = localPreview ? parameters.get('motion') : null;
-  let studyKey = Object.hasOwn(studies, requestedStudy) ? requestedStudy : 'resonance';
-  let study = studies[studyKey];
-  const requestedPace = localPreview ? Number(parameters.get('pace') || 1) : 1;
-  let pace = Number.isFinite(requestedPace) ? Math.min(1.8, Math.max(.6, requestedPace)) : 1;
-  let time = 0;
+  const preference = matchMedia('(prefers-reduced-motion: reduce)');
+  const label = toggle.querySelector('span');
+  const icon = toggle.querySelector('path');
+  let paused = preference.matches;
+  let visible = true;
+  let pageActive = true;
+  let ready = false;
   let frame = 0;
   let previous = 0;
   let renderedAt = 0;
-  let visible = true;
+  let time = 40;
+  let quality = 1;
+  let slowFrames = 0;
   let width = 0;
   let height = 0;
-  let ratio = 1;
   let scale = 1;
-  let amber;
-  let violet;
-  const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let paused = preference.matches;
-  const label = toggle.querySelector('span');
-  const icon = toggle.querySelector('path');
-  const bands = [
-    { phase: .5, direction: -1, offset: 0, color: '#e7bd89' },
-    { phase: 2.9, direction: 1, offset: 30, color: '#b7a0eb' }
-  ];
-  const lineCount = 38;
-  const step = 22;
-  const samples = [];
-  for (let x = -200; x <= 1800; x += step) samples.push(x);
+  let copyBounds = [0, 0, 1, 1];
+  let targetX = -1e4;
+  let targetY = -1e4;
+  let mouseX = -1e4;
+  let mouseY = -1e4;
+  let intensity = 0;
+  let program;
+  let buffer;
+  let uniforms;
 
-  function running() { return !paused && visible && !document.hidden; }
+  function running() {
+    return ready && !paused && visible && pageActive && !document.hidden;
+  }
 
   function stop() {
     cancelAnimationFrame(frame);
@@ -61,112 +150,11 @@
     if (running() && !frame) frame = requestAnimationFrame(tick);
   }
 
-  function yAt(x, strand, band) {
-    const travel = time * study.speed * band.direction;
-    const phase = x * .0036 + travel + band.phase;
-    const center = 590 + band.offset + Math.sin(phase) * study.amplitude
-      + Math.sin(x * .0064 - travel * .47 + band.phase) * 22;
-    // A moving twist changes the ribbon's width; the finer wave propagates
-    // through individual strands instead of shifting a finished picture.
-    const spread = study.width * (.68 + .32 * Math.sin(x * .0048 - travel * .7 + band.phase));
-    const ripple = Math.sin(x * .0115 + travel * 1.5 + strand * 1.8)
-      * study.detail * strand;
-    return center + strand * spread + ripple;
-  }
-
-  function trace(strand, band, from = -200, to = 1800) {
-    ctx.beginPath();
-    let first = true;
-    for (const x of samples) {
-      if (x < from || x > to) continue;
-      const y = yAt(x, strand, band);
-      if (first) { ctx.moveTo(x, y); first = false; }
-      else ctx.lineTo(x, y);
-    }
-  }
-
-  function draw() {
-    if (!width || !height) return;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.setTransform(scale * ratio, 0, 0, scale * ratio,
-      (width - 1600 * scale) * ratio / 2, (height - 960 * scale) * ratio / 2);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.globalCompositeOperation = 'screen';
-    bands.forEach((band, bandIndex) => {
-      ctx.strokeStyle = bandIndex === 0 ? amber : violet;
-      // Broad, faint layers give light a soft edge without full-frame blur.
-      for (const [thickness, opacity] of [[70, .018], [36, .027], [16, .034]]) {
-        ctx.lineWidth = thickness;
-        ctx.globalAlpha = opacity;
-        trace(0, band);
-        ctx.stroke();
-      }
-      ctx.lineWidth = .8;
-      for (let i = 0; i < lineCount; i++) {
-        const strand = i / (lineCount - 1) * 2 - 1;
-        ctx.globalAlpha = .10 + .38 * Math.pow(1 - Math.abs(strand), .9);
-        trace(strand, band);
-        ctx.stroke();
-      }
-      // Highlight packets travel across the strands, giving a clear direction
-      // of flow even at moments when the broad waveform changes slowly.
-      const head = ((time * study.speed * 330 * -band.direction + bandIndex * 700) % 2400 + 2400) % 2400 - 400;
-      const pulse = ctx.createLinearGradient(head - 260, 0, head + 260, 0);
-      pulse.addColorStop(0, 'transparent');
-      pulse.addColorStop(.5, band.color);
-      pulse.addColorStop(1, 'transparent');
-      ctx.strokeStyle = pulse;
-      ctx.lineWidth = 1.1;
-      for (let i = 3; i < lineCount - 3; i += 3) {
-        ctx.globalAlpha = study.pulse;
-        trace(i / (lineCount - 1) * 2 - 1, band, head - 260, head + 260);
-        ctx.stroke();
-      }
-    });
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = 'source-over';
-  }
-
-  function tick(now) {
-    frame = 0;
-    if (!running()) { previous = 0; return; }
-    if (previous) time += Math.min((now - previous) / 1000, .05) * pace;
-    previous = now;
-    const interval = width < 800 ? 1000 / 30 : 1000 / 60;
-    if (now - renderedAt >= interval - 1) {
-      draw();
-      renderedAt = now;
-    }
-    frame = requestAnimationFrame(tick);
-  }
-
-  function resize() {
-    const bounds = canvas.getBoundingClientRect();
-    width = bounds.width;
-    height = bounds.height;
-    // Keep the decorative layer modest on Retina screens and phones.
-    ratio = Math.min(window.devicePixelRatio || 1, 1.5,
-      Math.sqrt(2200000 / Math.max(width * height, 1)));
-    canvas.width = Math.round(width * ratio);
-    canvas.height = Math.round(height * ratio);
-    scale = Math.max(width / 1600, height / 960);
-    ctx.setTransform(scale * ratio, 0, 0, scale * ratio,
-      (width - 1600 * scale) * ratio / 2, (height - 960 * scale) * ratio / 2);
-    amber = ctx.createLinearGradient(-200, 0, 1800, 0);
-    amber.addColorStop(0, 'transparent');
-    amber.addColorStop(.22, '#b87d4b');
-    amber.addColorStop(.5, '#edc798');
-    amber.addColorStop(.8, '#bd8b60');
-    amber.addColorStop(1, 'transparent');
-    violet = ctx.createLinearGradient(-200, 0, 1800, 0);
-    violet.addColorStop(0, 'transparent');
-    violet.addColorStop(.2, '#8a9bdd');
-    violet.addColorStop(.5, '#b39be4');
-    violet.addColorStop(.8, '#9671bd');
-    violet.addColorStop(1, 'transparent');
-    draw();
+  function showFallback() {
+    ready = false;
+    stop();
+    hero.classList.remove('canvas-ready');
+    toggle.hidden = true;
   }
 
   function updateMotion() {
@@ -174,76 +162,141 @@
     toggle.setAttribute('aria-pressed', String(paused));
     label.textContent = paused ? 'Resume motion' : 'Pause motion';
     icon.setAttribute('d', paused ? 'M3 1l8 5-8 5z' : 'M2 1h2v10H2zM8 1h2v10H8z');
-    const labPause = document.querySelector('.motion-lab__pause');
-    if (labPause) { labPause.textContent = paused ? 'Resume' : 'Pause'; labPause.setAttribute('aria-pressed', String(paused)); }
-    if (paused) stop(); else start();
+    if (running()) start(); else stop();
   }
 
-  resize();
-  hero.classList.add('canvas-ready');
-  toggle.hidden = false;
-  updateMotion();
+  function compile(type, source) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      const error = gl.getShaderInfoLog(shader);
+      gl.deleteShader(shader);
+      throw new Error(error || 'Ribbon shader compilation failed');
+    }
+    return shader;
+  }
+
+  function initialize() {
+    const shaders = [];
+    try {
+      program = gl.createProgram();
+      shaders.push(compile(gl.VERTEX_SHADER, vertexSource));
+      shaders.push(compile(gl.FRAGMENT_SHADER, fragmentSource));
+      shaders.forEach(shader => gl.attachShader(program, shader));
+      gl.linkProgram(program);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        throw new Error(gl.getProgramInfoLog(program) || 'Ribbon shader linking failed');
+      }
+      gl.useProgram(program);
+      buffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      const position = gl.getAttribLocation(program, 'p');
+      gl.enableVertexAttribArray(position);
+      gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+      uniforms = Object.fromEntries(['res', 'scale', 't', 'copyBounds', 'mouse']
+        .map(name => [name, gl.getUniformLocation(program, name)]));
+      ready = true;
+      resize();
+      hero.classList.add('canvas-ready');
+      toggle.hidden = false;
+      updateMotion();
+    } catch (error) {
+      console.warn('Hero ribbons:', error);
+      if (buffer) gl.deleteBuffer(buffer);
+      if (program) gl.deleteProgram(program);
+      showFallback();
+    } finally {
+      shaders.forEach(shader => gl.deleteShader(shader));
+    }
+  }
+
+  function resize() {
+    if (!ready) return;
+    const bounds = canvas.getBoundingClientRect();
+    width = bounds.width;
+    height = bounds.height;
+    if (!width || !height) return;
+    scale = Math.min(devicePixelRatio || 1, 2) * 0.5 * quality;
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    const text = copy.getBoundingClientRect();
+    copyBounds = [(text.left - bounds.left) / width, (text.top - bounds.top) / height,
+      (text.right - bounds.left) / width, (text.bottom - bounds.top) / height];
+    // A resize may refresh a still, but never advances its time or pointer state.
+    draw(false);
+  }
+
+  function draw(advancePointer) {
+    if (!ready || !width || !height) return;
+    if (advancePointer) {
+      const dx = (targetX - mouseX) * 0.3;
+      const dy = (targetY - mouseY) * 0.3;
+      mouseX += dx;
+      mouseY += dy;
+      const speed = Math.min(1, Math.hypot(dx, dy) / 60);
+      intensity += (speed - intensity) * (speed > intensity ? 0.5 : 0.06);
+    }
+    gl.uniform2f(uniforms.res, width, height);
+    gl.uniform1f(uniforms.scale, scale);
+    gl.uniform1f(uniforms.t, time);
+    gl.uniform4fv(uniforms.copyBounds, copyBounds);
+    gl.uniform3f(uniforms.mouse, mouseX, mouseY, intensity);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+
+  function tick(now) {
+    frame = 0;
+    if (!running()) { previous = 0; return; }
+    const delta = previous ? now - previous : 0;
+    previous = now;
+    time += delta / 1000;
+    if (delta > 0 && delta < 100) {
+      slowFrames = delta > 24 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
+    }
+    if (slowFrames > 40 && quality > 0.5) {
+      quality -= 0.25;
+      slowFrames = 0;
+      resize();
+    }
+    if (now - renderedAt >= 1000 / 61) {
+      renderedAt = now;
+      draw(true);
+    }
+    frame = requestAnimationFrame(tick);
+  }
+
+  window.addEventListener('pointermove', event => {
+    if (!running()) return;
+    const bounds = canvas.getBoundingClientRect();
+    targetX = event.clientX - bounds.left;
+    targetY = event.clientY - bounds.top;
+    if (mouseX < -1e3) { mouseX = targetX; mouseY = targetY; }
+  }, { passive: true });
   toggle.addEventListener('click', () => { paused = !paused; updateMotion(); });
   preference.addEventListener('change', () => { paused = preference.matches; updateMotion(); });
-  if ('ResizeObserver' in window) new ResizeObserver(resize).observe(canvas);
-  else window.addEventListener('resize', resize);
+  if ('ResizeObserver' in window) {
+    const observer = new ResizeObserver(resize);
+    observer.observe(canvas);
+    observer.observe(copy);
+  } else window.addEventListener('resize', resize);
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
       if (running()) start(); else stop();
     }).observe(hero);
   }
-  document.addEventListener('visibilitychange', () => { if (running()) start(); else stop(); });
-  window.addEventListener('pagehide', stop);
-  window.addEventListener('pageshow', start);
-
-  // The experiment controls exist only in the local preview, never on the
-  // public landing page. Each choice uses the same renderer and palette.
-  if (localPreview) {
-    const lab = document.createElement('aside');
-    lab.className = 'motion-lab';
-    lab.setAttribute('aria-label', 'Wave motion experiment');
-    lab.innerHTML = `<div class="motion-lab__heading"><strong>Wave study</strong><button class="motion-lab__pause" type="button" aria-pressed="false">Pause</button></div>
-      <div class="motion-lab__options" role="group" aria-label="Motion style">
-        <button type="button" data-study="silk" aria-pressed="false">Silk</button>
-        <button type="button" data-study="current" aria-pressed="false">Current</button>
-        <button type="button" data-study="resonance" aria-pressed="true">Resonance</button>
-      </div>
-      <label class="motion-lab__pace">Pace <input type="range" min="0.6" max="1.8" step="0.1" value="1" aria-label="Wave pace" /><output>1.0×</output></label>
-      <p class="motion-lab__description" aria-live="polite">Traveling crests with light flowing along the ribbons.</p>`;
-    const descriptions = {
-      silk: 'Long, soft waves. A calmer, continuous flow.',
-      current: 'Traveling crests with light flowing along the ribbons.',
-      resonance: 'Faster ripples and a more elastic, lively surface.'
-    };
-    lab.querySelectorAll('[data-study]').forEach(button => {
-      button.addEventListener('click', () => {
-        studyKey = button.dataset.study;
-        study = studies[studyKey];
-        lab.querySelectorAll('[data-study]').forEach(option => option.setAttribute('aria-pressed', String(option === button)));
-        lab.querySelector('.motion-lab__description').textContent = descriptions[button.dataset.study];
-        saveStudy();
-        // Preserve phase when comparing treatments; don't restart at a posed frame.
-        draw();
-      });
-    });
-    lab.querySelector('input').addEventListener('input', event => {
-      pace = Number(event.target.value);
-      lab.querySelector('output').textContent = `${pace.toFixed(1)}×`;
-      saveStudy();
-    });
-    function saveStudy() {
-      const url = new URL(location.href);
-      url.searchParams.set('motion', studyKey);
-      url.searchParams.set('pace', pace.toFixed(1));
-      history.replaceState(null, '', url);
-    }
-    lab.querySelectorAll('[data-study]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.study === studyKey)));
-    lab.querySelector('.motion-lab__description').textContent = descriptions[studyKey];
-    lab.querySelector('input').value = pace.toFixed(1);
-    lab.querySelector('output').textContent = `${pace.toFixed(1)}×`;
-    lab.querySelector('.motion-lab__pause').addEventListener('click', () => { paused = !paused; updateMotion(); });
-    document.body.append(lab);
-    updateMotion();
-  }
+  document.addEventListener('visibilitychange', () => {
+    if (running()) start(); else stop();
+  });
+  window.addEventListener('pagehide', () => { pageActive = false; stop(); });
+  window.addEventListener('pageshow', () => { pageActive = true; start(); });
+  canvas.addEventListener('webglcontextlost', event => {
+    event.preventDefault();
+    showFallback();
+  });
+  canvas.addEventListener('webglcontextrestored', initialize);
+  initialize();
 })();
