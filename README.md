@@ -93,3 +93,20 @@ Before publishing, inspect desktop and mobile layouts, project/detail and contac
 links, mobile-menu keyboard behavior, pointer response, pause/resume, reduced motion,
 visibility/page lifecycle, and WebGL fallback/context restoration. Run
 `node --check script.js`, `node --check energy.js` and `git diff --check`.
+
+## Shared wave logo motion
+
+The header keeps the original amber 32×28 three-wave mark. Three paths deform
+their control points in matching 4.8s loops, phased by 0.3s per row; endpoints
+and icon/text bounds stay fixed. The same keyframes ship in Studio's shared
+SVG image. CSS path animation is progressive: original d attributes remain
+the fallback. Reduced motion always restores those original shapes; without
+JavaScript, the header mark stays static.
+
+`energy.js` exposes its paused state as `html[data-motion-paused]`. The existing
+Pause/Resume control freezes/resumes the header at its current shape along with
+the hero and companions. It stays available if WebGL fails because logo motion
+can still run. Hero shader/pointer math and companion lifecycle are preserved.
+CSS and JS share `brand-wave-1` cache URLs. Verify real path deformation,
+Pause/Resume with/without WebGL, reduced motion and desktop/phone rendering
+before publishing. No favicon, game-detail brand or static email changes.

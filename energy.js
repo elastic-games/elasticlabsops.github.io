@@ -124,15 +124,6 @@ void main() {
   canvas.setAttribute('aria-hidden', 'true');
   fallback.after(canvas);
   let gl;
-  try {
-    gl = canvas.getContext('webgl2', {
-      antialias: false, alpha: false, powerPreference: 'low-power'
-    });
-  } catch {
-    canvas.remove();
-    return;
-  }
-  if (!gl) { canvas.remove(); return; }
 
   // Only exact integers are accepted; clamp to the three available teammates.
   const requested = new URLSearchParams(window.location.search).get('companions');
@@ -229,7 +220,8 @@ void main() {
     ready = false;
     stop();
     hero.classList.remove('canvas-ready');
-    toggle.hidden = true;
+    // The header logo still has motion when the hero uses its static fallback.
+    toggle.hidden = false;
     if (permanent) {
       failed = true;
       if (overlay) overlay.remove();
@@ -238,6 +230,7 @@ void main() {
   }
 
   function updateMotion() {
+    document.documentElement.dataset.motionPaused = String(paused);
     hero.classList.toggle('is-paused', paused);
     toggle.setAttribute('aria-pressed', String(paused));
     label.textContent = paused ? 'Resume motion' : 'Pause motion';
@@ -449,5 +442,17 @@ void main() {
     showFallback();
   });
   canvas.addEventListener('webglcontextrestored', initialize);
+  // Bind the shared Pause control before probing WebGL, so it also controls
+  // the header logo on devices using the static hero fallback.
+  updateMotion();
+  try {
+    gl = canvas.getContext('webgl2', {
+      antialias: false, alpha: false, powerPreference: 'low-power'
+    });
+  } catch {
+    showFallback(true);
+    return;
+  }
+  if (!gl) { showFallback(true); return; }
   initialize();
 })();
