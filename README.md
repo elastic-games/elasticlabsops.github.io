@@ -37,7 +37,8 @@ Elastic-specific adaptations:
 
 - The quiet zone follows Elastic's centered copy in both axes, instead of the
   reference's left-aligned desktop copy. It dims light to 0.35 inside the copy
-  bounds, easing to full intensity outside them; geometry and colors are unchanged.
+  bounds, easing to full intensity outside them. This dimming preserves geometry
+  and colors; the companion interactions described below add local deformation.
 - The existing pause/resume control stops both the animation clock and pointer
   updates. Reduced motion starts with a still at `t = 40`; explicit resume enables
   motion. Resizing refreshes a still without advancing time or pointer state.
@@ -50,6 +51,40 @@ Elastic-specific adaptations:
   `landing.css` is homepage-only; `styles.css` still styles the game detail page.
 - Page copy, navigation, concept-art disclosure, private-demo status, project
   links and `inbox@elasticlabs.com` contact links are preserved.
+
+## Simulated co-op background
+
+Three decorative arrow cursors (amber P2, violet P3 and blue P4) wander through
+the hero by default. These are local simulations, not connected people: there
+is no multiplayer service, network traffic, presence or online status. Use
+`?companions=1`, `?companions=2` or `?companions=3` to change their count;
+`?companions=0` compares the original real-pointer-only background. Integer
+values are clamped to 0–3; missing, empty or malformed values use the default 3.
+There is no settings UI, and this parameter only affects the landing background.
+
+Each independently phased route has curved legs, varied travel times, soft
+acceleration/deceleration and brief dwells. Paths sit below the copy/buttons and
+can rise into the ribbons at the sides on wide layouts. Narrow layouts keep them
+in the lower band. Routes are art-directed rather than tracking a particular
+strand, so a cursor can pass through darker gaps as the ribbons evolve.
+
+Arrow tips and the three shader inputs share CSS-pixel positions calculated from
+the wave clock, including the initial reduced-motion still at `t = 40`. Each
+position and speed intensity contributes the same kind of soft eddy, ribbon glow
+and a localized far-ribbon depth shift. Companion warp is pooled and capped at
+0.10 hero-height units, added glow at 1.2 and depth shift at 0.03, even when all
+three overlap. The real pointer retains its reference smoothing, intensity and
+interaction; `companions=0` contributes no extra warp/glow/depth.
+
+The overlay is `aria-hidden` and ignores pointer events. It has no independent
+CSS animation or timer: pause, reduced motion, hidden/offscreen states and
+pagehide freeze the companions and waves together, and resume retains the clock.
+Resize refreshes their common geometry without advancing time; measurements and
+route allocations stay outside the frame loop (apart from transform strings).
+Context loss hides both the WebGL image and cursors; restoration recreates GPU
+inputs at the retained time and respects pause. No WebGL2 creates no overlay;
+permanent shader initialization failure removes the overlay and canvas, leaving
+the existing SVG fallback. That SVG has no simulated cursor interaction.
 
 Bump the landing stylesheet/script version tags in `index.html` when changing motion
 or styling, so browsers request a matching pair of assets.

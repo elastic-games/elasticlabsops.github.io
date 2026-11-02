@@ -56,6 +56,15 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hero.canvas-ready .energy-canvas { visibility: visible; }
 .energy-ribbon { transform: none; }
 .hero.canvas-ready .energy-field { visibility: hidden; }
+/* Decorative simulated teammates, driven by the WebGL animation clock. The
+   arrow tip's (0, 0) is the exact CSS position supplied to the shader. */
+.energy-companions { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; visibility: hidden; }
+.hero.canvas-ready .energy-companions { visibility: visible; }
+.energy-companion { position: absolute; top: 0; left: 0; color: #edbd7a; opacity: .85; pointer-events: none; will-change: transform; }
+.energy-companion--1 { color: #b99aed; }
+.energy-companion--2 { color: #8ab7f5; }
+.energy-companion svg { display: block; width: 16px; height: 20px; overflow: visible; fill: currentColor; stroke: #181619; stroke-width: 1.25; stroke-linejoin: round; }
+.energy-companion span { position: absolute; top: 16px; left: 14px; padding: 2px 4px; border-radius: 3px; background: #181619b8; font: 500 9px/1.2 Inter, sans-serif; letter-spacing: .02em; white-space: nowrap; }
 .hero__foot { position: absolute; bottom: 29px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
 .hero__scroll { display: inline-flex; align-items: center; gap: 12px; color: #a49ba7; text-decoration: none; font-size: 10px; letter-spacing: .045em; }
 .scroll-track { display: block; width: 14px; height: 23px; border: 1px solid #b6a7c04d; border-radius: 8px; }
