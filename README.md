@@ -94,19 +94,30 @@ links, mobile-menu keyboard behavior, pointer response, pause/resume, reduced mo
 visibility/page lifecycle, and WebGL fallback/context restoration. Run
 `node --check script.js`, `node --check energy.js` and `git diff --check`.
 
-## Shared wave logo motion
+## Shared pointer-reactive wave logo
 
-The header keeps the original amber 32×28 three-wave mark. Three paths deform
-their control points in matching 4.8s loops, phased by 0.3s per row; endpoints
-and icon/text bounds stay fixed. The same keyframes ship in Studio's shared
-SVG image. CSS path animation is progressive: original d attributes remain
-the fallback. Reduced motion always restores those original shapes; without
-JavaScript, the header mark stays static.
+The header keeps its amber 32×28 three-wave mark and fixed endpoints/text bounds.
+`logo-wave-motion.js` is byte-identical to Studio’s controller: 4.8s ambient flow,
+0.3s row stagger, plus a 110px mouse/pen proximity halo that pulls cubic handles
+toward the pointer. Recent movement strengthens the bend; leave eases it back
+to ambient flow. Touch scrolling is ignored. No icon or wordmark transforms.
 
-`energy.js` exposes its paused state as `html[data-motion-paused]`. The existing
-Pause/Resume control freezes/resumes the header at its current shape along with
-the hero and companions. It stays available if WebGL fails because logo motion
-can still run. Hero shader/pointer math and companion lifecycle are preserved.
-CSS and JS share `brand-wave-1` cache URLs. Verify real path deformation,
-Pause/Resume with/without WebGL, reduced motion and desktop/phone rendering
-before publishing. No favicon, game-detail brand or static email changes.
+`logo.js` connects the header to the existing `html[data-motion-paused]` hook.
+Pause freezes the current flow and interaction; Resume retains the clock, even
+without WebGL. Reduced motion always restores the original static shapes and
+suppresses pointer response, including live preference changes and explicit hero
+Resume. Without JavaScript the mark is static. JS alone writes path geometry;
+CSS never competes for d. Shared passive pointer listeners/RAF, resize/intersection
+observers and page/visibility lifecycle keep work bounded and suspend offscreen.
+Fixed viewBox corners mapped through getScreenCTM define the input viewport;
+changing painted bounds are ignored. Resize/intersection observe the outer SVG,
+with a stable outer-viewport fallback when matrix APIs are unavailable.
+The existing energy shader, co-op cursors and their pointer math are unchanged.
+
+The stylesheet, energy script and logo modules use `brand-pointer-1` cache tags.
+Before publication, verify actual32px deformation with real pointer coordinates,
+stable bounds/links/focus, Pause/Resume including WebGL fallback, reduced motion,
+and desktop/phone rendering. Studio’s `test:logo-waves` checks exported math,
+controller lifecycle, SSR/hydration and cleanup; temporary cross-repo checks live
+at `/private/tmp/elastic-logo-pointer-20261102/`. No favicon, game-detail brand,
+static email, settings panels or branding copy changes.
