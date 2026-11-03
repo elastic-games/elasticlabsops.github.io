@@ -94,30 +94,29 @@ links, mobile-menu keyboard behavior, pointer response, pause/resume, reduced mo
 visibility/page lifecycle, and WebGL fallback/context restoration. Run
 `node --check script.js`, `node --check energy.js` and `git diff --check`.
 
-## Shared pointer-reactive wave logo
+## Mouse-only wave logo response
 
-The header keeps its amber 32×28 three-wave mark and fixed endpoints/text bounds.
-`logo-wave-motion.js` is byte-identical to Studio’s controller: 4.8s ambient flow,
-0.3s row stagger, plus a 110px mouse/pen proximity halo that pulls cubic handles
-toward the pointer. Recent movement strengthens the bend; leave eases it back
-to ambient flow. Touch scrolling is ignored. No icon or wordmark transforms.
+The amber32×28 header mark stays exactly still at its original three paths when
+idle. `logo-wave-motion.js` is byte-identical to Studio’s controller: only mouse/
+pen movement in a110px halo briefly pulls the cubic handles toward the pointer.
+Endpoints and text bounds stay fixed. Finite260ms movement memory and eased
+return restore exact original paths when movement stops or leaves. Same-position
+events do not sustain it. Shared RAF stops completely at rest and wakes on input.
+Touch scrolling is ignored; no icon/wordmark transforms or autonomous poses.
 
-`logo.js` connects the header to the existing `html[data-motion-paused]` hook.
-Pause freezes the current flow and interaction; Resume retains the clock, even
-without WebGL. Reduced motion always restores the original static shapes and
-suppresses pointer response, including live preference changes and explicit hero
-Resume. Without JavaScript the mark is static. JS alone writes path geometry;
-CSS never competes for d. Shared passive pointer listeners/RAF, resize/intersection
-observers and page/visibility lifecycle keep work bounded and suspend offscreen.
-Fixed viewBox corners mapped through getScreenCTM define the input viewport;
-changing painted bounds are ignored. Resize/intersection observe the outer SVG,
-with a stable outer-viewport fallback when matrix APIs are unavailable.
-The existing energy shader, co-op cursors and their pointer math are unchanged.
+`logo.js` uses the existing `html[data-motion-paused]` hook. Pause freezes response
+and input memory, including WebGL fallback; Resume starts at the retained shape.
+Reduced motion always restores original static paths and disables interaction,
+including live preference changes and explicit hero Resume. Without JS the mark
+is static. Fixed viewBox corners via getScreenCTM define proximity and inverse
+pointer mapping, with outer SVG observers and a stable matrix-API fallback.
+Hidden/offscreen/page lifecycle states suspend work and unmount cleans resources.
+The hero energy shader, co-op cursors and pointer math are unchanged.
 
-The stylesheet, energy script and logo modules use `brand-pointer-1` cache tags.
-Before publication, verify actual32px deformation with real pointer coordinates,
-stable bounds/links/focus, Pause/Resume including WebGL fallback, reduced motion,
-and desktop/phone rendering. Studio’s `test:logo-waves` checks exported math,
-controller lifecycle, SSR/hydration and cleanup; temporary cross-repo checks live
-at `/private/tmp/elastic-logo-pointer-20261102/`. No favicon, game-detail brand,
-static email, settings panels or branding copy changes.
+Stylesheet, energy script and logo module URLs use `brand-mouse-only-1` cache tags.
+Before publishing, verify still idle/settled marks, response at actual32px with
+real moving pointer coordinates, stationary/leave settlement, stable link/focus/
+bounds, shared Pause/Resume including WebGL fallback, reduced motion and desktop/
+phone appearance. Studio’s focused tests cover math, idle RAF, input/lifecycle,
+SSR/hydration and cleanup. Evidence: /private/tmp/elastic-logo-pointer-20261102/.
+No favicon, game-detail brand, settings panel or branding copy changes.

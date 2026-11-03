@@ -6,23 +6,15 @@ export const STATIC_WAVES = [
 	'M2 20C9 10 23 30 30 20'
 ];
 
-const poses = [[9, -10, 23, 10], [12, -10, 26, 0], [9, 10, 23, -10], [6, 0, 20, 10]];
 const clamp = (n, low, high) => Math.max(low, Math.min(high, n));
 const round = (n) => Math.round(n * 1000) / 1000;
 
-/** Anchored cubic control points; 4.8s flow and 0.3s row stagger. */
-export function wavePaths(seconds, { x = 16, y = 14, strength = 0 } = {}) {
+/** Still at rest; only pointer input pulls the two handles of each anchored row. */
+export function wavePaths({ x = 16, y = 14, strength = 0 } = {}) {
+	if (strength <= 0) return [...STATIC_WAVES];
 	return STATIC_WAVES.map((_, row) => {
-		const phase = ((seconds + row * 0.3) % 4.8) / 1.2;
-		const index = Math.floor(phase);
-		const ease = (1 - Math.cos((phase - index) * Math.PI)) / 2;
-		const a = poses[index];
-		const b = poses[(index + 1) % 4];
-		const points = a.map((n, i) => n + (b[i] - n) * ease);
 		const baseline = 8 + row * 6;
-		points[1] += baseline;
-		points[3] += baseline;
-		// Pull each handle toward the local pointer, never the endpoints or tile.
+		const points = [9, baseline - 10, 23, baseline + 10];
 		for (let i = 0; i < 4; i += 2) {
 			points[i] += clamp((x - points[i]) / 16, -1, 1) * 4 * strength;
 			points[i + 1] += clamp((y - points[i + 1]) / 14, -1, 1) * 6 * strength;
@@ -87,8 +79,8 @@ export function mountLogoWaves(mark, { pauseRoot } = {}) {
 	while (viewport.ownerSVGElement) viewport = viewport.ownerSVGElement;
 	const item = {
 		mark, viewport, pauseRoot, paths: Array.from(mark.querySelectorAll('path')),
-		rect: null, dirty: true, inView: true, previous: null, time: 0,
-		x: 16, y: 14, strength: 0
+		rect: null, dirty: true, inView: true, previous: null, remaining: 0, input: 0,
+		x: 16, y: 14, targetX: 16, targetY: 14, strength: 0
 	};
 	instances.add(item);
 	if (!disconnect) disconnect = connect();
@@ -149,9 +141,10 @@ function connect() {
 		instances.forEach((item) => {
 			if (preference.matches) {
 				item.strength = 0;
+				item.remaining = 0;
 				item.paths.forEach((path, i) => path.setAttribute('d', STATIC_WAVES[i]));
 			}
-			if (running(item)) active = true;
+			if (running(item) && (item.remaining > 0 || item.strength > 0)) active = true;
 			else item.previous = null;
 		});
 		if (active && !frame) frame = requestAnimationFrame(tick);
@@ -160,42 +153,58 @@ function connect() {
 	function tick(now) {
 		frame = 0;
 		instances.forEach((item) => {
-			if (!running(item)) { item.previous = null; return; }
-			const dt = item.previous === null ? 0 : clamp(now - item.previous, 0, 64);
+			if (!running(item) || (!item.remaining && !item.strength)) { item.previous = null; return; }
+			const dt = item.previous === null ? 0 : Math.max(0, now - item.previous);
 			item.previous = now;
-			item.time = (item.time + dt / 1000) % 4.8;
-			let strength = 0;
-			if (pointer) {
-				const r = item.rect;
-				const dx = pointer.x - r.left - r.width / 2;
-				const dy = pointer.y - r.top - r.height / 2;
-				const proximity = clamp(1 - Math.hypot(dx, dy) / 110, 0, 1);
-				const speed = pointer.speed * Math.exp(-(now - pointer.at) / 180);
-				strength = proximity * proximity * (3 - 2 * proximity) * (0.72 + speed * 0.28);
-				const ease = item.strength < 0.001 ? 1 : 1 - Math.exp(-dt / 90);
-				const point = item.point(pointer.x, pointer.y);
-				item.x += (clamp(point.x, -16, 48) - item.x) * ease;
-				item.y += (clamp(point.y, -14, 42) - item.y) * ease;
+			// A finite 260ms input memory: a stationary pointer never sustains a bend.
+			item.remaining = Math.max(0, item.remaining - dt);
+			const target = item.input * item.remaining / 260;
+			item.strength += (target - item.strength) * (1 - Math.exp(-dt / (target > item.strength ? 45 : 120)));
+			const ease = 1 - Math.exp(-dt / 70);
+			item.x += (item.targetX - item.x) * ease;
+			item.y += (item.targetY - item.y) * ease;
+			if (!item.remaining && item.strength < 0.0015) {
+				item.strength = 0;
+				item.previous = null;
 			}
-			item.strength += (strength - item.strength) * (1 - Math.exp(-dt / (strength ? 110 : 240)));
-			wavePaths(item.time, item).forEach((d, i) => item.paths[i].setAttribute('d', d));
+			wavePaths(item).forEach((d, i) => item.paths[i].setAttribute('d', d));
 		});
 		refresh();
 	}
 	listen(window, 'pointermove', (event) => {
 		if ((event.pointerType !== 'mouse' && event.pointerType !== 'pen') || event.isPrimary === false) return;
-		// Read geometry on input as well: a parent may move without resizing.
+		// Read fixed viewport geometry on input: a parent can move without resizing.
 		instances.forEach((item) => { item.dirty = true; });
-		if (![...instances].some(running)) return;
+		if (![...instances].some(running)) { pointer = null; return; }
 		const now = performance.now();
 		const distance = pointer ? Math.hypot(event.clientX - pointer.x, event.clientY - pointer.y) : 0;
-		const speed = pointer ? clamp(distance / Math.max(8, now - pointer.at) / 0.6, 0, 1) : 0;
-		pointer = { x: event.clientX, y: event.clientY, at: now, speed };
+		if (pointer && distance < 0.05) return;
+		const speed = pointer ? clamp(distance / Math.max(8, now - pointer.at) / 0.6, 0, 1) : 0.5;
+		pointer = { x: event.clientX, y: event.clientY, at: now };
+		instances.forEach((item) => {
+			if (!running(item)) return;
+			const r = item.rect;
+			const proximity = clamp(1 - Math.hypot(pointer.x - r.left - r.width / 2, pointer.y - r.top - r.height / 2) / 110, 0, 1);
+			if (!proximity) { item.remaining = 0; return; }
+			const point = item.point(pointer.x, pointer.y);
+			item.targetX = clamp(point.x, -16, 48);
+			item.targetY = clamp(point.y, -14, 42);
+			if (!item.strength) { item.x = item.targetX; item.y = item.targetY; }
+			item.input = proximity * proximity * (3 - 2 * proximity) * (0.65 + speed * 0.35);
+			item.remaining = 260;
+			if (item.previous === null) item.previous = now;
+		});
+		refresh();
 	}, { passive: true });
-	listen(window, 'pointerout', (event) => { if (!event.relatedTarget) pointer = null; }, { passive: true });
-	listen(window, 'pointercancel', () => { pointer = null; }, { passive: true });
-	listen(window, 'pointerdown', (event) => { if (event.pointerType === 'touch') pointer = null; }, { passive: true });
-	listen(window, 'blur', () => { pointer = null; });
+	const leave = () => {
+		pointer = null;
+		instances.forEach((item) => { if (running(item)) item.remaining = 0; });
+		refresh();
+	};
+	listen(window, 'pointerout', (event) => { if (!event.relatedTarget) leave(); }, { passive: true });
+	listen(window, 'pointercancel', leave, { passive: true });
+	listen(window, 'pointerdown', (event) => { if (event.pointerType === 'touch') leave(); }, { passive: true });
+	listen(window, 'blur', leave);
 	const geometry = () => {
 		instances.forEach((item) => { item.dirty = true; });
 		refresh(true);
